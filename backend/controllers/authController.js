@@ -102,3 +102,30 @@ export async function verifyOtp(req, res) {
 
 
 // step 3: complete profile
+export async function completeProfile(req, res){
+  try {
+    const {email, department, stream, semester, year, rillNo} = req.body;
+    if(!email) return res.status(400).json({message: "Email is required"});
+
+     const user = await User.findOne({ email });
+    if (!user)
+      return res.status(400).json({
+        message: "user not found",
+      });
+    if(!user.isVerified) return res.status(400).json({
+      message: "User not verified"
+    });
+
+    Object.assign(user, {department, stream, semester, year, rollNo, isProfileComplete: true});
+    await user.save();
+    res.status(200).json({
+      message: "Profile completed successfully"
+    })
+  } catch (error) {
+    console.log("Error Completing profile:", error);
+    res.status(500).json({
+      message: "Error Completing profile",
+      error: error.message,
+    });
+  }
+}
