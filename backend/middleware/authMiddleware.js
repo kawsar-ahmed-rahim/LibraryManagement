@@ -1,4 +1,5 @@
 import User from "../models/User.js";
+import jwt from "jsonwebtoken";
 
 // to authenticate JWT Token
 export const authenticateToken = async (req, res, next) => {
@@ -25,4 +26,17 @@ export const authenticateToken = async (req, res, next) => {
     console.error("JWT Auth error:", error);
     res.status(401).json({ message: "Token is not valid" });
   }
+};
+
+// middleware to authorize specific roles
+
+export const authorizeRoles = (...roles) => {
+  return (req, res, next) => {
+    if (!req.user || !roles.includes(req.user.role)) {
+      return res.status(403).json({
+        message: "Access Forbidden",
+      });
+    }
+    next();
+  };
 };
