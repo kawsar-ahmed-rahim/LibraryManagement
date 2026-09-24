@@ -3,6 +3,8 @@ import { generate } from "otp-generator";
 import sendOtp from "../utils/sendOTP.js";
 import bcrypt from "bcryptjs";
 import { v4 as uuidv4 } from "uuid";
+import jwt from "jsonwebtoken";
+
 // registration of a student step 1 : register user and send otp
 
 export async function registerUser(req, res) {
@@ -100,32 +102,89 @@ export async function verifyOtp(req, res) {
   }
 }
 
-
 // step 3: complete profile
-export async function completeProfile(req, res){
+export async function completeProfile(req, res) {
   try {
-    const {email, department, stream, semester, year, rillNo} = req.body;
-    if(!email) return res.status(400).json({message: "Email is required"});
+    const { email, department, stream, semester, year, rillNo } = req.body;
+    if (!email) return res.status(400).json({ message: "Email is required" });
 
-     const user = await User.findOne({ email });
+    const user = await User.findOne({ email });
     if (!user)
       return res.status(400).json({
         message: "user not found",
       });
-    if(!user.isVerified) return res.status(400).json({
-      message: "User not verified"
-    });
+    if (!user.isVerified)
+      return res.status(400).json({
+        message: "User not verified",
+      });
 
-    Object.assign(user, {department, stream, semester, year, rollNo, isProfileComplete: true});
+    Object.assign(user, {
+      department,
+      stream,
+      semester,
+      year,
+      rollNo,
+      isProfileComplete: true,
+    });
     await user.save();
     res.status(200).json({
-      message: "Profile completed successfully"
-    })
+      message: "Profile completed successfully",
+    });
   } catch (error) {
     console.log("Error Completing profile:", error);
     res.status(500).json({
       message: "Error Completing profile",
       error: error.message,
+    });
+  }
+}
+
+// Login as a student or admin
+
+export async function loginUser(req, res) {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and Password are required",
+      });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user)
+      return res
+        .status(404)
+        .json({ success: false, message: "user not found" });
+    if (!user.isVerified) {
+      return res.status(403).json({
+        success: false,
+        message: "Please verify your email with OTP before loggin in",
+      });
+    }
+    if (!(await bcrypt.compare(password, user.password))) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid credentials",
+      });
+    }
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" },
+    );
+    const { password: _, ...userResponse } = user.toObject();
+
+    res.status(200).json({
+      success: true,
+      token,
+      user: userResponse,
+    });
+  } catch (error) {
+    console.log("Error during login:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
     });
   }
 }
