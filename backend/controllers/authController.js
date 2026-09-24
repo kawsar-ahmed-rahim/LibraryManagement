@@ -159,7 +159,7 @@ export async function loginUser(req, res) {
     if (!user.isVerified) {
       return res.status(403).json({
         success: false,
-        message: "Please verify your email with OTP before loggin in",
+        message: "Please verify your email with OTP before logged in",
       });
     }
     if (!(await bcrypt.compare(password, user.password))) {
@@ -225,11 +225,9 @@ export async function updateProfile(req, res) {
       const normalizedEmail = email.trim().toLowerCase();
       if (normalizedEmail !== user.email.toLowerCase()) {
         if (user.role === "user") {
-          return res
-            .status(400)
-            .json({
-              message: "Students are not allowed to change their email address",
-            });
+          return res.status(400).json({
+            message: "Students are not allowed to change their email address",
+          });
         }
         if (
           await User.findOne({ email: normalizedEmail, _id: { $ne: user._id } })
@@ -269,10 +267,55 @@ export async function updateProfile(req, res) {
 }
 
 // to get all students account(admin)
-export async function getUsers(req, res){
+export async function getUsers(req, res) {
   try {
-    
+    const users = await User.find({
+      role: "user",
+      isVerified: true,
+      isProfileComplete: true,
+    }).select("-password");
+    res.status(200).json({ success: true, users });
   } catch (error) {
-    
+    console.error("Error fetching students:", error);
+    res
+      .status(500)
+      .json({ message: "Error fetching students", error: error.message });
+  }
+}
+
+// for admin registration
+export async function registerAdmin(req, res) {
+  try {
+    const { name, email, phone, password } = req.body;
+    if (!name || !email || !phone || !password) {
+      return res.status(400).json({
+        message: "Please enter all required fields.",
+      });
+    }
+    if (await User.findOne({ email })) {
+      return res.status(400).json({
+        message: "user already exists with this email",
+      });
+    }
+    const hashedpassword = await bcrypt.hash(password, 10);
+    const user = await User.create({
+      name,
+      email: email.trim().toLowerCase(),
+      phone,
+      password: hashedpassword,
+      role: "admin",
+      isVerified: true,
+    });
+    const { password: _, ...userResponse } = user.toObject();
+    res.status(201).json({
+      success: true,
+      message: "Admin registered successfully!",
+      user: userResponse,
+    });
+  } catch (error) {
+    console.error("Error registering admin:", error);
+    res
+      .status(500)
+      .json({ message: "Error registering admin", error: error.message });
   }
 }
