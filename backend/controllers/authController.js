@@ -1,6 +1,6 @@
 import User from "../models/User.js";
 import { generate } from "otp-generator";
-import sendOtp from "../utils/sendOTP.js";
+import sendOTP from "../utils/sendOTP.js";
 import bcrypt from "bcryptjs";
 import { v4 as uuidv4 } from "uuid";
 import jwt from "jsonwebtoken";
@@ -105,7 +105,7 @@ export async function verifyOtp(req, res) {
 // step 3: complete profile
 export async function completeProfile(req, res) {
   try {
-    const { email, department, stream, semester, year, rillNo } = req.body;
+    const { email, department, stream, semester, year, rollNo } = req.body;
     if (!email) return res.status(400).json({ message: "Email is required" });
 
     const user = await User.findOne({ email });
