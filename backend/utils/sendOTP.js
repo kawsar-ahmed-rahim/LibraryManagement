@@ -1,6 +1,6 @@
 import { createTransport } from "nodemailer";
 
-const sendOtp = async (email, otp) => {
+const sendOTP = async (email, otp) => {
   const transporter = createTransport({
     service: "gmail",
     auth: {
