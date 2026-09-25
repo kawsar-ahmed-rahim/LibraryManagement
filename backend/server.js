@@ -17,7 +17,7 @@ connectDB();
 
 // ROUTES
 app.use("/api/auth", authRouter)
-pp.use("/api/students", studentRouter)
+app.use("/api/students", studentRouter)
 
 app.get("/", (req, res) => {
   res.send("API WORKING");
