@@ -1,7 +1,21 @@
+import {sidebarStyles as s} from "../assets/dummyStyles";
+import {ChartNoAxesCombined} from "lucide-react";
 
-const Sidebar = () => {
+const iconMap = {
+    dashboard: ChartNoAxesCombined
+}
+const Sidebar = ({
+    title,
+    subtitle,
+    badge,
+    navItems,
+    footerItems = [],
+    accent = "user",
+    logoSrc
+
+}) => {
   return (
-    <div>Sidebar</div>
+    <div></div>
   )
 }
 
