@@ -1,6 +1,11 @@
+
 import Sidebar from "../components/Sidebar";
+
 import { BookMarked, ShieldCheck, Users } from "lucide-react";
+
 import { useAuth } from "../shared/AuthContext";
+
+import { useNavigate } from "react-router-dom";
 
 const navItems = [
   {
@@ -38,7 +43,10 @@ const features = [
 ];
 
 const Home = () => {
-  const {currentUser, logout} = useAuth();
+  const { currentUser, logout } = useAuth();
+
+  const navigate = useNavigate();
+
   const footerItems = currentUser
     ? [
         {
@@ -52,7 +60,12 @@ const Home = () => {
         },
       ]
     : [
-        { label: "Login", href: "/login", icon: "login", kind: "primary" },
+        {
+          label: "Login",
+          href: "/login",
+          icon: "login",
+          kind: "primary",
+        },
         {
           label: "Sign Up",
           href: "/signup",
@@ -60,6 +73,7 @@ const Home = () => {
           kind: "secondary",
         },
       ];
+
   return (
     <div>
       <Sidebar
@@ -74,3 +88,4 @@ const Home = () => {
 };
 
 export default Home;
+
