@@ -1,4 +1,6 @@
 import Sidebar from "../components/Sidebar";
+import { BookMarked, ShieldCheck, Users } from "lucide-react";
+import { useAuth } from "../shared/AuthContext";
 
 const navItems = [
   {
@@ -36,6 +38,7 @@ const features = [
 ];
 
 const Home = () => {
+  const {currentUser, logout} = useAuth();
   const footerItems = currentUser
     ? [
         {
