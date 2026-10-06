@@ -38,7 +38,7 @@ const Login = () => {
       [name]: value,
     }));
   }
-  // to submit the data to the backend and handle login
+ // to submit the data to the backend and handle  login
   return (
    <div className={s.pageContainer}>
     <div className={s.mainCard}>
