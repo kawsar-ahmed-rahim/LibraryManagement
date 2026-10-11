@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useAuth } from "../shared/AuthContext";
 import { signupStyles as s } from "../assets/dummyStyles";
 import { useNavigate, Link } from "react-router-dom";
 import {
@@ -9,20 +10,29 @@ import {
   Mail,
   EyeOff,
   Eye,
+  Building2,
+  GraduationCap,
+  CalendarDays,
+  Hash,
 } from "lucide-react";
+
 const stepList = [
   { id: 1, title: "Account" },
   { id: 2, title: "OTP" },
   { id: 3, title: "Profile" },
 ];
 
-const signupHighlights = [
-  "Step 1 collects student account details and checks immediately if the email already exists.",
-  "Step 2 verifies the OTP before moving forward.",
-  "Step 3 saves department, stream, semester, year, and roll number.",
-];
+const semesterOptions = Array.from(
+  { length: 8 },
+  (_, i) => `Semester ${i + 1}`,
+);
+const yearOptions = ["1st Year", "2nd Year", "3rd Year", "4th Year"];
 
-const demoOtp = "2468";
+// Button classes. If your signupStyles has button keys, swap these in.
+const primaryBtn =
+  "flex-1 rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60";
+const secondaryBtn =
+  "rounded-xl border border-gray-300 px-5 py-3 font-semibold text-gray-700 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60";
 
 const Signup = () => {
   const { registerStudent, verifyOtpCode, completeProfileData, logout } =
@@ -57,14 +67,20 @@ const Signup = () => {
   const handleChange = (event) => {
     const { name, value } = event.target;
     setError("");
+
+    let nextValue = value;
     if (name === "phone") {
-      const digitOnly = value.replace(/\D/g, "").slice(0, 10);
-      setForm((current) => ({
-        ...current,
-        [name]: value,
-      }));
+      nextValue = value.replace(/\D/g, "").slice(0, 10);
+    } else if (name === "otp") {
+      nextValue = value.replace(/\D/g, "").slice(0, 4);
     }
+
+    setForm((current) => ({
+      ...current,
+      [name]: nextValue,
+    }));
   };
+
   const validateStepOne = () => {
     if (
       !form.name.trim() ||
@@ -125,7 +141,7 @@ const Signup = () => {
 
     if (step === 2) {
       if (!form.otp.trim()) {
-        setError("Please enter the 6-digit OTP code sent to your email.");
+        setError("Please enter the 4-digit OTP code sent to your email.");
         return;
       }
       setLoading(true);
@@ -149,16 +165,24 @@ const Signup = () => {
     setError("");
     setStep((current) => Math.max(1, current - 1));
   };
+
   // to submit the data and get user registered in the server
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    // Enter key on steps 1 and 2 should move forward, not submit everything
+    if (step < 3) {
+      goNext();
+      return;
+    }
+
     setError("");
     if (!validateStepOne() || !form.otp.trim() || !validateStepThree()) {
       setError("Please complete all steps first");
       return;
     }
     setLoading(true);
-    const result = await completeProfileDate({
+    const result = await completeProfileData({
       email: form.email,
       department: form.department,
       stream: form.stream,
@@ -172,7 +196,7 @@ const Signup = () => {
       setError(result.error);
       return;
     }
-    showToast("student profile completed. Redirecting to login...");
+    showToast("Student profile completed. Redirecting to login...");
     setTimeout(() => {
       logout();
       navigate("/login", {
@@ -181,6 +205,7 @@ const Signup = () => {
       });
     }, 1000);
   };
+
   return (
     <div className={s.pageContainer}>
       {toast && (
@@ -217,7 +242,9 @@ const Signup = () => {
                 </div>
               ))}
             </div>
+
             <form className={s.form} onSubmit={handleSubmit}>
+              {/* STEP 1: Account */}
               {step === 1 && (
                 <>
                   <label className="block">
@@ -232,7 +259,7 @@ const Signup = () => {
                       onChange={handleChange}
                       placeholder="Enter Your Full Name"
                       className={s.input}
-                    ></input>
+                    />
                   </label>
 
                   <label className="block">
@@ -247,28 +274,29 @@ const Signup = () => {
                       onChange={handleChange}
                       placeholder="Enter Your Email"
                       className={s.input}
-                    ></input>
+                    />
                   </label>
 
                   <label className="block">
                     <span className={s.fieldLabel}>
                       <Phone size={15} />
-                      Full name
+                      Phone Number
                     </span>
                     <input
                       type="text"
+                      inputMode="numeric"
                       name="phone"
                       value={form.phone}
                       onChange={handleChange}
                       placeholder="Enter Your Phone Number"
                       className={s.input}
-                    ></input>
+                    />
                   </label>
 
                   <label className="block">
                     <span className={s.fieldLabel}>
                       <LockKeyhole size={15} />
-                      Full name
+                      Password
                     </span>
                     <div className={s.passwordWrapper}>
                       <input
@@ -278,7 +306,7 @@ const Signup = () => {
                         onChange={handleChange}
                         placeholder="Enter Your Password"
                         className={s.passwordInput}
-                      ></input>
+                      />
                       <button
                         type="button"
                         onClick={() => setShowPassword((current) => !current)}
@@ -294,6 +322,153 @@ const Signup = () => {
                   </label>
                 </>
               )}
+
+              {/* STEP 2: OTP */}
+              {step === 2 && (
+                <label className="block">
+                  <span className={s.fieldLabel}>
+                    <LockKeyhole size={15} />
+                    OTP Code
+                  </span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    name="otp"
+                    value={form.otp}
+                    onChange={handleChange}
+                    maxLength={4}
+                    placeholder="Enter 4-digit OTP"
+                    className={s.input}
+                  />
+                </label>
+              )}
+
+              {/* STEP 3: Profile */}
+              {step === 3 && (
+                <>
+                  <label className="block">
+                    <span className={s.fieldLabel}>
+                      <Building2 size={15} />
+                      Department
+                    </span>
+                    <input
+                      type="text"
+                      name="department"
+                      value={form.department}
+                      onChange={handleChange}
+                      placeholder="e.g. Computer Science"
+                      className={s.input}
+                    />
+                  </label>
+
+                  <label className="block">
+                    <span className={s.fieldLabel}>
+                      <GraduationCap size={15} />
+                      Stream
+                    </span>
+                    <input
+                      type="text"
+                      name="stream"
+                      value={form.stream}
+                      onChange={handleChange}
+                      placeholder="Enter Your Stream"
+                      className={s.input}
+                    />
+                  </label>
+
+                  <label className="block">
+                    <span className={s.fieldLabel}>
+                      <CalendarDays size={15} />
+                      Semester
+                    </span>
+                    <select
+                      name="semester"
+                      value={form.semester}
+                      onChange={handleChange}
+                      className={s.input}
+                    >
+                      {semesterOptions.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label className="block">
+                    <span className={s.fieldLabel}>
+                      <CalendarDays size={15} />
+                      Academic Year
+                    </span>
+                    <select
+                      name="academicYear"
+                      value={form.academicYear}
+                      onChange={handleChange}
+                      className={s.input}
+                    >
+                      {yearOptions.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label className="block">
+                    <span className={s.fieldLabel}>
+                      <Hash size={15} />
+                      Roll Number
+                    </span>
+                    <input
+                      type="text"
+                      name="rollNumber"
+                      value={form.rollNumber}
+                      onChange={handleChange}
+                      placeholder="Enter Your Roll Number"
+                      className={s.input}
+                    />
+                  </label>
+                </>
+              )}
+
+              {error && <p className="text-sm text-red-500">{error}</p>}
+
+              <div className="flex gap-3">
+                {step > 1 && (
+                  <button
+                    type="button"
+                    onClick={goBack}
+                    disabled={loading}
+                    className={secondaryBtn}
+                  >
+                    Back
+                  </button>
+                )}
+                {step < 3 ? (
+                  <button
+                    type="button"
+                    onClick={goNext}
+                    disabled={loading}
+                    className={primaryBtn}
+                  >
+                    {loading
+                      ? step === 1
+                        ? "Sending OTP..."
+                        : "Verifying..."
+                      : step === 1
+                        ? "Send OTP"
+                        : "Verify OTP"}
+                  </button>
+                ) : (
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className={primaryBtn}
+                  >
+                    {loading ? "Saving..." : "Complete Signup"}
+                  </button>
+                )}
+              </div>
             </form>
           </div>
         </section>
