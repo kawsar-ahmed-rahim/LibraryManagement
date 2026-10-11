@@ -1,7 +1,15 @@
 import { useEffect, useState } from "react";
 import { signupStyles as s } from "../assets/dummyStyles";
-import { useNavigate } from "react-router-dom";
-
+import { useNavigate, Link } from "react-router-dom";
+import {
+  CheckCircle2,
+  UserRound,
+  Phone,
+  LockKeyhole,
+  Mail,
+  EyeOff,
+  Eye,
+} from "lucide-react";
 const stepList = [
   { id: 1, title: "Account" },
   { id: 2, title: "OTP" },
@@ -16,11 +24,8 @@ const signupHighlights = [
 
 const demoOtp = "2468";
 
-
-  
-
 const Signup = () => {
-    const { registerStudent, verifyOtpCode, completeProfileData, logout } =
+  const { registerStudent, verifyOtpCode, completeProfileData, logout } =
     useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
@@ -50,15 +55,16 @@ const Signup = () => {
   // it will show the toast for 2.6 second
 
   const handleChange = (event) => {
-    const {name, value} = event.target;
+    const { name, value } = event.target;
     setError("");
-    if(name === "phone"){
-        const digitOnly = value.replace(/\D/g, "").slice(0, 10);
-        setForm((current) => ({
-            ...current, [name]: value,
-        }))
+    if (name === "phone") {
+      const digitOnly = value.replace(/\D/g, "").slice(0, 10);
+      setForm((current) => ({
+        ...current,
+        [name]: value,
+      }));
     }
-  }
+  };
   const validateStepOne = () => {
     if (
       !form.name.trim() ||
@@ -85,14 +91,14 @@ const Signup = () => {
       !form.rollNumber.trim()
     ) {
       setError(
-        "Please complete department, stream, semester, year, and roll number."
+        "Please complete department, stream, semester, year, and roll number.",
       );
       return false;
     }
     return true;
   };
 
-   const showToast = (message, tone = "success") => {
+  const showToast = (message, tone = "success") => {
     setToast({ message, tone });
   };
 
@@ -147,36 +153,153 @@ const Signup = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError("");
-    if(!validateStepOne() || !form.otp.trim() || !validateStepThree()){
-        setError("Please complete all steps first");
-        return;
+    if (!validateStepOne() || !form.otp.trim() || !validateStepThree()) {
+      setError("Please complete all steps first");
+      return;
     }
     setLoading(true);
     const result = await completeProfileDate({
-        email: form.email,
-        department: form.department,
-        stream: form.stream,
-        semester: form.semester,
-        academicYear: form.academicYear,
-        rollNumber: form.rollNumber
+      email: form.email,
+      department: form.department,
+      stream: form.stream,
+      semester: form.semester,
+      academicYear: form.academicYear,
+      rollNumber: form.rollNumber,
     });
     setLoading(false);
-    if(!result.ok){
-        showToast(result.error, "error");
-        setError(result.error);
-        return;
+    if (!result.ok) {
+      showToast(result.error, "error");
+      setError(result.error);
+      return;
     }
     showToast("student profile completed. Redirecting to login...");
     setTimeout(() => {
-        logout();
-        navigate("/login", { replace: true , state: { signupEmail: form.email, signupPassword: form.password }});
-    },1000);
-  }
+      logout();
+      navigate("/login", {
+        replace: true,
+        state: { signupEmail: form.email, signupPassword: form.password },
+      });
+    }, 1000);
+  };
   return (
-    <div>
+    <div className={s.pageContainer}>
+      {toast && (
+        <div
+          className={`${s.toastBase} ${toast.tone === "error" ? s.toastError : s.toastSuccess}`}
+        >
+          <div className={s.toastContent}>
+            <CheckCircle2 size={18} />
+            {toast.message}
+          </div>
+        </div>
+      )}
+      <div className={s.mainCard}>
+        <section className={s.formPanel}>
+          <div className={s.formInner}>
+            <Link to="/" className={s.backLink}>
+              Back to Home
+            </Link>
+            <h1 className={s.panelTitle}>
+              Create your student library account.
+            </h1>
+            <p className={s.panelSubtitle}>
+              Complete the student signup steps: account, OTP, and profile
+              details.
+            </p>
+            <div className={s.stepGrid}>
+              {stepList.map((item) => (
+                <div
+                  key={item.id}
+                  className={`${s.stepCard} ${step >= item.id ? s.stepCardCompleted : s.stepCardPending}`}
+                >
+                  <p className={s.stepLabel}>Step {item.id}</p>
+                  <p className={s.stepTitle}>{item.title}</p>
+                </div>
+              ))}
+            </div>
+            <form className={s.form} onSubmit={handleSubmit}>
+              {step === 1 && (
+                <>
+                  <label className="block">
+                    <span className={s.fieldLabel}>
+                      <UserRound size={15} />
+                      Full name
+                    </span>
+                    <input
+                      type="text"
+                      name="name"
+                      value={form.name}
+                      onChange={handleChange}
+                      placeholder="Enter Your Full Name"
+                      className={s.input}
+                    ></input>
+                  </label>
 
+                  <label className="block">
+                    <span className={s.fieldLabel}>
+                      <Mail size={15} />
+                      Email Address
+                    </span>
+                    <input
+                      type="email"
+                      name="email"
+                      value={form.email}
+                      onChange={handleChange}
+                      placeholder="Enter Your Email"
+                      className={s.input}
+                    ></input>
+                  </label>
+
+                  <label className="block">
+                    <span className={s.fieldLabel}>
+                      <Phone size={15} />
+                      Full name
+                    </span>
+                    <input
+                      type="text"
+                      name="phone"
+                      value={form.phone}
+                      onChange={handleChange}
+                      placeholder="Enter Your Phone Number"
+                      className={s.input}
+                    ></input>
+                  </label>
+
+                  <label className="block">
+                    <span className={s.fieldLabel}>
+                      <LockKeyhole size={15} />
+                      Full name
+                    </span>
+                    <div className={s.passwordWrapper}>
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        name="password"
+                        value={form.password}
+                        onChange={handleChange}
+                        placeholder="Enter Your Password"
+                        className={s.passwordInput}
+                      ></input>
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((current) => !current)}
+                        className={s.toggleButton}
+                      >
+                        {showPassword ? (
+                          <EyeOff size={17} />
+                        ) : (
+                          <Eye size={17} />
+                        )}
+                      </button>
+                    </div>
+                  </label>
+                </>
+              )}
+            </form>
+          </div>
+        </section>
+      </div>
     </div>
-  )
-}
+  );
+};
 
-export default Signup
+export default Signup;
