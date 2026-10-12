@@ -2,10 +2,9 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
-import ProtectedRoute from "./components/ProtectedRoute";
-import AdminLayout from "./layouts/AdminLayout"; 
-import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
-import UserDashboardPage from "./pages/user/UserDashboardPage"; 
+import ProtectedRoute from "./shared/ProtectedRoute";
+import AdminLayout from "./admin/AdminLayout"; 
+import AdminDashboardPage from "./admin/AdminDashboardPage";
 
 const App = () => {
   return (
@@ -24,12 +23,12 @@ const App = () => {
       </Route>
 
       {/* Student */}
-      <Route element={<ProtectedRoute allowedRole="user" />}>
+      {/* <Route element={<ProtectedRoute allowedRole="user" />}>
         <Route path="/user/dashboard" element={<UserDashboardPage />} />
-      </Route>
+      </Route> */}
 
       {/* Fallback */}
-      <Route path="*" element={<Navigate to="/" replace />} />
+      {/* <Route path="*" element={<Navigate to="/" replace />} /> */}
     </Routes>
   );
 };

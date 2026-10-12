@@ -1,4 +1,4 @@
-import { ProtectedRouteStyles as s } from "./ProtectedRoute.styles";
+import { protectedRouteStyles as s } from "../assets/dummyStyles";
 import { useAuth } from "./AuthContext";
 import { useLocation, Navigate, Outlet } from "react-router-dom";
 
