@@ -10,11 +10,14 @@ import {
   Mail,
   EyeOff,
   Eye,
-  Building2,
-  GraduationCap,
-  CalendarDays,
-  Hash,
+  ArrowRight,
+  BadgeCheck,
+  KeyRound,
+  Sparkles,
 } from "lucide-react";
+import { studentSemesters, studentYears } from "../data/libraryData";
+
+const OTP_LENGTH = 6;
 
 const stepList = [
   { id: 1, title: "Account" },
@@ -22,17 +25,11 @@ const stepList = [
   { id: 3, title: "Profile" },
 ];
 
-const semesterOptions = Array.from(
-  { length: 8 },
-  (_, i) => `Semester ${i + 1}`,
-);
-const yearOptions = ["1st Year", "2nd Year", "3rd Year", "4th Year"];
-
-// Button classes. If your signupStyles has button keys, swap these in.
-const primaryBtn =
-  "flex-1 rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60";
-const secondaryBtn =
-  "rounded-xl border border-gray-300 px-5 py-3 font-semibold text-gray-700 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60";
+const signupHighlights = [
+  "Step 1 collects student account details and checks immediately if the email already exists.",
+  "Step 2 verifies the OTP before moving forward.",
+  "Step 3 saves department, stream, semester, year, and roll number.",
+];
 
 const Signup = () => {
   const { registerStudent, verifyOtpCode, completeProfileData, logout } =
@@ -62,7 +59,6 @@ const Signup = () => {
     const timer = setTimeout(() => setToast(null), 2600);
     return () => clearTimeout(timer);
   }, [toast]);
-  // it will show the toast for 2.6 second
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -72,7 +68,7 @@ const Signup = () => {
     if (name === "phone") {
       nextValue = value.replace(/\D/g, "").slice(0, 10);
     } else if (name === "otp") {
-      nextValue = value.replace(/\D/g, "").slice(0, 4);
+      nextValue = value.replace(/\D/g, "").slice(0, OTP_LENGTH);
     }
 
     setForm((current) => ({
@@ -141,7 +137,9 @@ const Signup = () => {
 
     if (step === 2) {
       if (!form.otp.trim()) {
-        setError("Please enter the 4-digit OTP code sent to your email.");
+        setError(
+          `Please enter the ${OTP_LENGTH}-digit OTP code sent to your email.`,
+        );
         return;
       }
       setLoading(true);
@@ -166,7 +164,7 @@ const Signup = () => {
     setStep((current) => Math.max(1, current - 1));
   };
 
-  // to submit the data and get user registered in the server
+  // submit the data and get user registered in the server
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -325,106 +323,105 @@ const Signup = () => {
 
               {/* STEP 2: OTP */}
               {step === 2 && (
-                <label className="block">
-                  <span className={s.fieldLabel}>
-                    <LockKeyhole size={15} />
-                    OTP Code
-                  </span>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    name="otp"
-                    value={form.otp}
-                    onChange={handleChange}
-                    maxLength={4}
-                    placeholder="Enter 4-digit OTP"
-                    className={s.input}
-                  />
-                </label>
+                <>
+                  <div className={s.otpInfoBox}>
+                    <p className={s.otpInfoLabel}>Verification Sent</p>
+                    <p className={s.otpInfoText}>
+                      We have sent a {OTP_LENGTH}-digit OTP verification code to{" "}
+                      <span className={s.emailHighlight}>{form.email}</span>.
+                      Please check your inbox and enter the code below to verify
+                      your account.
+                    </p>
+                  </div>
+
+                  <label className="block">
+                    <span className={s.fieldLabel}>
+                      <KeyRound size={15} />
+                      OTP Verification
+                    </span>
+                    <input
+                      name="otp"
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={OTP_LENGTH}
+                      value={form.otp}
+                      onChange={handleChange}
+                      placeholder={`Enter ${OTP_LENGTH}-digit OTP`}
+                      className={s.input}
+                    />
+                  </label>
+                </>
               )}
 
               {/* STEP 3: Profile */}
               {step === 3 && (
                 <>
                   <label className="block">
-                    <span className={s.fieldLabel}>
-                      <Building2 size={15} />
-                      Department
-                    </span>
+                    <span className={s.fieldLabelBlock}>Department</span>
                     <input
-                      type="text"
                       name="department"
+                      type="text"
                       value={form.department}
                       onChange={handleChange}
-                      placeholder="e.g. Computer Science"
+                      placeholder="Write your department"
                       className={s.input}
                     />
                   </label>
 
                   <label className="block">
-                    <span className={s.fieldLabel}>
-                      <GraduationCap size={15} />
-                      Stream
-                    </span>
+                    <span className={s.fieldLabelBlock}>Stream</span>
                     <input
-                      type="text"
                       name="stream"
+                      type="text"
                       value={form.stream}
                       onChange={handleChange}
-                      placeholder="Enter Your Stream"
+                      placeholder="Write your stream"
                       className={s.input}
                     />
                   </label>
 
-                  <label className="block">
-                    <span className={s.fieldLabel}>
-                      <CalendarDays size={15} />
-                      Semester
-                    </span>
-                    <select
-                      name="semester"
-                      value={form.semester}
-                      onChange={handleChange}
-                      className={s.input}
-                    >
-                      {semesterOptions.map((option) => (
-                        <option key={option} value={option}>
-                          {option}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
+                  <div className={s.twoColumnGrid}>
+                    <label className="block">
+                      <span className={s.fieldLabelBlock}>Semester</span>
+                      <select
+                        name="semester"
+                        value={form.semester}
+                        onChange={handleChange}
+                        className={s.select}
+                      >
+                        {studentSemesters.map((semester) => (
+                          <option key={semester} value={semester}>
+                            {semester}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+
+                    <label className="block">
+                      <span className={s.fieldLabelBlock}>Year</span>
+                      <select
+                        name="academicYear"
+                        value={form.academicYear}
+                        onChange={handleChange}
+                        className={s.select}
+                      >
+                        {studentYears.map((year) => (
+                          <option key={year} value={year}>
+                            {year}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  </div>
 
                   <label className="block">
-                    <span className={s.fieldLabel}>
-                      <CalendarDays size={15} />
-                      Academic Year
-                    </span>
-                    <select
-                      name="academicYear"
-                      value={form.academicYear}
-                      onChange={handleChange}
-                      className={s.input}
-                    >
-                      {yearOptions.map((option) => (
-                        <option key={option} value={option}>
-                          {option}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-
-                  <label className="block">
-                    <span className={s.fieldLabel}>
-                      <Hash size={15} />
-                      Roll Number
-                    </span>
+                    <span className={s.fieldLabelBlock}>Roll Number</span>
                     <input
-                      type="text"
                       name="rollNumber"
+                      type="text"
                       value={form.rollNumber}
                       onChange={handleChange}
-                      placeholder="Enter Your Roll Number"
+                      placeholder="Write your roll number"
                       className={s.input}
                     />
                   </label>
@@ -433,23 +430,24 @@ const Signup = () => {
 
               {error && <p className="text-sm text-red-500">{error}</p>}
 
-              <div className="flex gap-3">
+              <div className={s.buttonGroup}>
                 {step > 1 && (
                   <button
                     type="button"
                     onClick={goBack}
                     disabled={loading}
-                    className={secondaryBtn}
+                    className={s.backButton}
                   >
                     Back
                   </button>
                 )}
+
                 {step < 3 ? (
                   <button
                     type="button"
                     onClick={goNext}
                     disabled={loading}
-                    className={primaryBtn}
+                    className={s.nextButton}
                   >
                     {loading
                       ? step === 1
@@ -458,18 +456,40 @@ const Signup = () => {
                       : step === 1
                         ? "Send OTP"
                         : "Verify OTP"}
+                    {!loading && <ArrowRight size={15} />}
                   </button>
                 ) : (
                   <button
                     type="submit"
                     disabled={loading}
-                    className={primaryBtn}
+                    className={s.submitButton}
                   >
-                    {loading ? "Saving..." : "Complete Signup"}
+                    {loading ? "Completing Profile..." : "Complete Profile"}
+                    {!loading && <ArrowRight size={15} />}
                   </button>
                 )}
               </div>
             </form>
+          </div>
+        </section>
+
+        <section className={s.infoPanel}>
+          <span className={s.infoBadge}>
+            <Sparkles size={14} />
+            Step wise signup
+          </span>
+          <h2 className={s.infoTitle}>
+            Create the student account, verify OTP, and finish the profile in
+            three steps.
+          </h2>
+
+          <div className={s.infoList}>
+            {signupHighlights.map((item) => (
+              <div key={item} className={s.infoListItem}>
+                <BadgeCheck size={18} className={s.infoIcon} />
+                <span>{item}</span>
+              </div>
+            ))}
           </div>
         </section>
       </div>

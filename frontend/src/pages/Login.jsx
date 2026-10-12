@@ -4,6 +4,7 @@ import {
   EyeOff,
   Eye,
   Mail,
+  LockKeyhole,
   ShieldCheck,
   UserRound,
   ArrowRight,
@@ -15,18 +16,20 @@ const roleChoices = [
   { value: "user", label: "Student", icon: UserRound },
   { value: "admin", label: "Admin", icon: ShieldCheck },
 ];
+
 const Login = () => {
-  const { login } = useAuth;
+  const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [form, setForm] = useState({
     email: "",
     password: "",
-    role: "",
+    role: "user",
   });
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+
   useEffect(() => {
     if (location.state?.signupEmail || location.state?.signupPassword) {
       setForm((current) => ({
@@ -45,10 +48,17 @@ const Login = () => {
       [name]: value,
     }));
   };
-  // to submit the data to the backend and handle  login
+
+  // submit the data to the backend and handle login
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError("");
+
+    if (!form.role) {
+      setError("Please select a login role.");
+      return;
+    }
+
     setLoading(true);
     try {
       console.log("attempting login with:", {
@@ -58,11 +68,11 @@ const Login = () => {
       const result = await login(form);
       console.log("Login result", result);
 
-      if (!result.ok) {
+      if (!result?.ok) {
         setLoading(false);
-        setError(result.error || "Login failed");
-        console.error("Login failed:", result.error);
-        result;
+        setError(result?.error || "Login failed");
+        console.error("Login failed:", result?.error);
+        return;
       }
 
       console.log("Login successful, navigating to dashboard...");
@@ -95,12 +105,13 @@ const Login = () => {
 
       console.log("Navigating to:", target);
       navigate(target, { replace: true });
-    } catch (error) {
+    } catch (err) {
       setLoading(false);
-      console.error("Login error:", error);
+      console.error("Login error:", err);
       setError("An unexpected error occurred. Please try again.");
     }
   };
+
   return (
     <div className={s.pageContainer}>
       <div className={s.mainCard}>
@@ -137,9 +148,12 @@ const Login = () => {
             </div>
           </div>
         </section>
+
         <section className={s.formPanel}>
           <div className={s.formInner}>
-            <Link to="/" className={s.backLink}></Link>
+            <Link to="/" className={s.backLink}>
+              Back to Home
+            </Link>
             <h2 className={s.formTitle}>Login Account</h2>
             <p className={s.formSubtitle}>
               Select your role and use your college library account credentials.
@@ -172,6 +186,7 @@ const Login = () => {
                   })}
                 </div>
               </div>
+
               <label className="block">
                 <span className={s.fieldLabel}>
                   <Mail size={15} />
@@ -190,7 +205,7 @@ const Login = () => {
 
               <label className="block">
                 <span className={s.fieldLabel}>
-                  <Mail size={15} />
+                  <LockKeyhole size={15} />
                   Password
                 </span>
                 <div className={s.passwordWrapper}>
@@ -212,7 +227,9 @@ const Login = () => {
                   </button>
                 </div>
               </label>
+
               {error && <div className={s.errorMessage}>{error}</div>}
+
               <div className={s.footerFlex}>
                 <span className={s.footerText}>
                   {form.role === "admin"
@@ -225,6 +242,7 @@ const Login = () => {
                   </Link>
                 )}
               </div>
+
               <button
                 type="submit"
                 className={s.submitButton}
