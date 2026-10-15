@@ -3,22 +3,49 @@ import User from "../models/User.js";
 import FineSetting from "../models/FineSetting.js";
 
 // Helper functions
+const getLocalIsoDate = (value = new Date()) => {
+  const d = new Date(value);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+};
+
+const getStartOfDay = (value) => new Date(new Date(value).setHours(0, 0, 0, 0));
+
+const getDiffInDays = (targetDateString) =>
+  Math.round(
+    (getStartOfDay(targetDateString) - getStartOfDay(new Date())) / 86400000,
+  );
+
+const getOverdueUnits = (overdueDays, interval) => {
+  if (overdueDays <= 0) return 0;
+  const divisor = { week: 7, month: 30, year: 365 }[interval] || 1;
+  return Math.ceil(overdueDays / divisor);
+};
+
+const calculateFine = (issue, fineRate = 10, fineInterval = "day") => {
+  if (!issue || issue.fineCleared || issue.returnedOn) return 0;
+  const overdueDays = Math.max(0, -getDiffInDays(issue.dueDate));
+  return (
+    getOverdueUnits(overdueDays, fineInterval) * fineRate +
+    (Number(issue.manualFine) || 0)
+  );
+};
 
 // 1. Issue manual books to a student
 export async function issueManualBooks(req, res) {
   try {
     const { studentDetails, books } = req.body;
-    if (!Array.isarray(books) || books.length === 0) {
+    if (!Array.isArray(books) || books.length === 0) {
       return res.status(400).json({ message: "No book were entered" });
     }
 
-    const student = await User.findOne({ rollNo: studentDetails.rollNumber });
-    if (!student)
+    const student = await User.findOne({ rollNo: studentDetails?.rollNumber });
+    if (!student) {
       return res.status(404).json({
         success: false,
         message: "Student not found",
       });
-    const todayIso = getLocalIsoDate();
+    }
+
     const validBooks = books.filter((b) => b.title && b.bookCode && b.dueDate);
     if (validBooks.length === 0) {
       return res.status(400).json({
@@ -26,34 +53,30 @@ export async function issueManualBooks(req, res) {
           "Please add at least one valid manual book entry with book code and a due date",
       });
     }
-    const getLocalIsoDate = (value = new Date()) => {
-      const d = new Date(value);
-      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-    };
 
-    const getStartOfDay = (value) =>
-      new Date(new Date(value).setHours(0, 0, 0, 0));
+    const settings =
+      (await FineSetting.findOne({})) ||
+      (await FineSetting.create({ amount: 10, interval: "day" }));
 
-    const getDiffInDays = (targetDateString) =>
-      Math.round(
-        (getStartOfDay(targetDateString) - getStartOfDay(new Date())) /
-          86400000,
-      );
+    const todayIso = getLocalIsoDate();
 
-    const getOverdueUnits = (overdueDays, interval) => {
-      if (overdueDays <= 0) return 0;
-      const divisor = { week: 7, month: 30, year: 365 }[interval] || 1;
-      return Math.ceil(overdueDays / divisor);
-    };
-
-    const calculateFine = (issue, fineRate = 10, fineInterval = "day") => {
-      if (!issue || issue.fineCleared || issue.returnedOn) return 0;
-      const overdueDays = Math.max(0, -getDiffInDays(issue.dueDate));
-      return (
-        getOverdueUnits(overdueDays, fineInterval) * fineRate +
-        (Number(issue.manualFine) || 0)
-      );
-    };
+    const createdIssues = await Issue.insertMany(
+      validBooks.map((b) => ({
+        userEmail: student.email.toLowerCase().trim(),
+        userName: student.name,
+        department: student.department,
+        stream: student.stream,
+        academicYear: student.year,
+        semester: student.semester,
+        rollNumber: student.rollNo,
+        title: b.title.trim(),
+        bookCode: b.bookCode.trim(),
+        issuedOn: todayIso,
+        dueDate: b.dueDate,
+        fineRate: settings.amount,
+        fineInterval: settings.interval,
+      })),
+    );
 
     res.status(201).json({
       success: true,
@@ -70,8 +93,8 @@ export async function issueManualBooks(req, res) {
     });
   }
 }
-// get all the manual issues (admin)
 
+// get all the manual issues (admin)
 export async function getIssues(req, res) {
   try {
     const issues = await Issue.find({}).sort({ createdAt: -1 });
@@ -80,10 +103,10 @@ export async function getIssues(req, res) {
       issues,
     });
   } catch (error) {
-    console.log("Error issuing manual issues:", error);
+    console.log("Error fetching manual issues:", error);
     res.status(500).json({
       success: false,
-      message: "Error issuing manual issues",
+      message: "Error fetching manual issues",
       error: error.message,
     });
   }
@@ -100,10 +123,10 @@ export async function getStudentIssues(req, res) {
       issues,
     });
   } catch (error) {
-    console.log("Error issuing student issues:", error);
+    console.log("Error fetching student issues:", error);
     res.status(500).json({
       success: false,
-      message: "Error issuing student issues",
+      message: "Error fetching student issues",
       error: error.message,
     });
   }
@@ -194,19 +217,19 @@ export async function clearFine(req, res) {
     console.log("Error clearing manual fine:", error);
     res.status(500).json({
       success: false,
-      message: "Error  clearing manual fine",
+      message: "Error clearing manual fine",
       error: error.message,
     });
   }
 }
 
 // get active fine setting
-export async function getFineSettings(req, res){
+export async function getFineSettings(req, res) {
   try {
-    const settings = (await FineSetting.findOne({}) || (
-      await FineSetting.create({ amount: 10, interval: "day"})
-    ));
-    res.status(200).json({ success: true, settings})
+    const settings =
+      (await FineSetting.findOne({})) ||
+      (await FineSetting.create({ amount: 10, interval: "day" }));
+    res.status(200).json({ success: true, settings });
   } catch (error) {
     console.log("Error fetching fine settings:", error);
     res.status(500).json({
@@ -218,18 +241,25 @@ export async function getFineSettings(req, res){
 }
 
 // to update fine settings
-export async function updateFineSettings(req, res){
+export async function updateFineSettings(req, res) {
   try {
-    const {amount, interval} = req.body;
+    const { amount, interval } = req.body;
     let settings = await FineSetting.findOne({});
-    if(settings){
-      if(amount !== undefined) settings.amount = Number(amount);
-      if(interval !== undefined) settings.interval = interval;
+    if (settings) {
+      if (amount !== undefined) settings.amount = Number(amount);
+      if (interval !== undefined) settings.interval = interval;
       await settings.save();
-    }else {
-      settings = await FineSetting.create({amount: Number(amount) || 10, interval: interval || "day"});
+    } else {
+      settings = await FineSetting.create({
+        amount: Number(amount) || 10,
+        interval: interval || "day",
+      });
     }
-    res.status(200).json({ success: true, message: "Fine settings updated successfully", settings})
+    res.status(200).json({
+      success: true,
+      message: "Fine settings updated successfully",
+      settings,
+    });
   } catch (error) {
     console.log("Error updating fine setting:", error);
     res.status(500).json({

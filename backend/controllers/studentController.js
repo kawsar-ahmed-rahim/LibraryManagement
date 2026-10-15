@@ -13,7 +13,7 @@ export async function searchStudentsByRoll(req, res) {
     const rollRegex = new RegExp(roll, "i");
     const students = await User.find({
       role: "user",
-      isProfileCompleted: true,
+      isProfileComplete: true,
       rollNo: { $regex: rollRegex },
     })
       .select(" name email department stream semester year rollNo")

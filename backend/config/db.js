@@ -1,9 +1,14 @@
+import dns from "node:dns";
 import mongoose from "mongoose";
 
+dns.setServers(["8.8.8.8", "1.1.1.1"]);
+
 export const connectDB = async () => {
-    mongoose.connect("mongodb+srv://kahmedrahim1512_db_user:n6DDX3SYnlYcHMrk@cluster0.a9h8rui.mongodb.net/LibraryManagement")
-    .then(()=> {
-        console.log("DB CONNECTED");
-        
-    })
-}
+  try {
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log("DB CONNECTED");
+  } catch (error) {
+    console.error("DB connection failed:", error.message);
+    process.exit(1);
+  }
+};
