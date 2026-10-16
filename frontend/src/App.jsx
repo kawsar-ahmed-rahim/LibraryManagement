@@ -6,8 +6,10 @@ import ProtectedRoute from "./shared/ProtectedRoute";
 import AdminLayout from "./admin/AdminLayout";
 import AdminDashboardPage from "./admin/AdminDashboardPage";
 import AdminBooksPage from "./admin/AdminBooksPage";
-import AdminUsersPage from "./admin/AdminUserspage";
+import AdminUsersPage from "./admin/AdminUsersPage";
 import AdminFinesPage from "./admin/AdminFinesPage";
+import UserLayout from "./user/UserLayout";
+import UserDashboardPage from "./user/UserDashboardPage";
 
 const App = () => {
   return (
@@ -29,12 +31,12 @@ const App = () => {
       </Route>
 
       {/* Student */}
-      {/* <Route element={<ProtectedRoute allowedRole="user" />}>
-        <Route path="/user/dashboard" element={<UserDashboardPage />} />
-      </Route> */}
-
-      {/* Fallback */}
-      {/* <Route path="*" element={<Navigate to="/" replace />} /> */}
+      <Route element={<ProtectedRoute allowedRole="user" />}>
+        <Route path="/user" element={<UserLayout />}>
+          <Route index element={<Navigate to="/user/dashboard" replace />} />
+          <Route path="dashboard" element={<UserDashboardPage />} />
+        </Route>
+      </Route>
     </Routes>
   );
 };
