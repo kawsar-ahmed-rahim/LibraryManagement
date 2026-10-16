@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 
 import {
@@ -24,11 +24,16 @@ const iconMap = {
   users: UserRound,
 };
 
+const footerIconMap = {
+  signup: UserPlus,
+  login: LogIn,
+};
+
 const Sidebar = ({
   title,
   subtitle,
   badge,
-  navItems,
+  navItems = [],
   footerItems = [],
   accent = "user",
   logoSrc,
@@ -38,12 +43,28 @@ const Sidebar = ({
 
   const badgeStyles = accent === "admin" ? s.badgeAdmin : s.badgeUser;
 
+  useEffect(() => {
+    setOpen(false);
+  }, [location.pathname]);
+
+  // FIX: close on Escape while the drawer is open
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [open]);
+
   return (
     <>
       <button
         type="button"
         onClick={() => setOpen(true)}
         className={s.mobileMenuButton}
+        aria-label="Open menu"
+        aria-expanded={open}
       >
         <Menu size={18} />
       </button>
@@ -53,6 +74,7 @@ const Sidebar = ({
           open ? s.mobileOverlayOpen : s.mobileOverlayClosed
         }`}
         onClick={() => setOpen(false)}
+        aria-hidden="true"
       />
 
       <aside
@@ -81,6 +103,7 @@ const Sidebar = ({
             onClick={() => setOpen(false)}
             type="button"
             className={s.closeButton}
+            aria-label="Close menu"
           >
             <X size={18} />
           </button>
@@ -92,13 +115,16 @@ const Sidebar = ({
 
             const active =
               location.pathname === item.href ||
-              (item.match ? location.pathname.startsWith(item.match) : false);
+              (item.match && item.match !== "/"
+                ? location.pathname.startsWith(item.match)
+                : false);
 
             return (
               <Link
-                key={item.label}
+                key={item.href ?? item.label}
                 to={item.href}
                 onClick={() => setOpen(false)}
+                aria-current={active ? "page" : undefined}
                 className={`${s.navLink} ${
                   active ? s.navLinkActive : s.navLinkInactive
                 }`}
@@ -134,14 +160,18 @@ const Sidebar = ({
 
         <div className={s.footer}>
           {footerItems.map((item) => {
-            const Icon = item.icon === "signup" ? UserPlus : LogIn;
+            const Icon = footerIconMap[item.icon] ?? LogIn;
+            const itemKey = item.href ?? item.label;
 
             if (item.action) {
               return (
                 <button
-                  key={item.label}
+                  key={itemKey}
                   type="button"
-                  onClick={item.action}
+                  onClick={() => {
+                    setOpen(false);
+                    item.action();
+                  }}
                   className={`${s.footerButton} ${
                     item.kind === "primary"
                       ? s.footerButtonPrimary
@@ -160,8 +190,9 @@ const Sidebar = ({
 
             return (
               <Link
-                key={item.label}
+                key={itemKey}
                 to={item.href}
+                onClick={() => setOpen(false)}
                 className={`${s.footerLink} ${
                   item.kind === "primary"
                     ? s.footerLinkPrimary
