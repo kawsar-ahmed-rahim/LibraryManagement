@@ -1,8 +1,8 @@
 import { Search } from "lucide-react";
 import { userBooksPageStyles as s } from "../assets/dummyStyles";
 import { useAuth } from "../shared/AuthContext";
-import { useLibrary } from ".";
-import { useState } from "react";
+import { useLibrary } from "../shared/LibraryContext";
+import { useState, useMemo } from "react";
 import UserBookCard from "./UserBookCard";
 const UserBooksPage = () => {
   const { currentUser } = useAuth();
@@ -87,11 +87,12 @@ const UserBooksPage = () => {
               value={filters.status}
               onChange={handleFilterChange}
               className={s.selectInput}
-            />
+            >
             <option value="All">All Status</option>
             <option value="Borrowed">Borrowed</option>
             <option value="Overdue">Overdue</option>
             <option value="Returned">Returned</option>
+            </select>
           </label>
         </div>
 
