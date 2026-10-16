@@ -3,10 +3,11 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ProtectedRoute from "./shared/ProtectedRoute";
-import AdminLayout from "./admin/AdminLayout"; 
+import AdminLayout from "./admin/AdminLayout";
 import AdminDashboardPage from "./admin/AdminDashboardPage";
 import AdminBooksPage from "./admin/AdminBooksPage";
 import AdminUsersPage from "./admin/AdminUserspage";
+import AdminFinesPage from "./admin/AdminFinesPage";
 
 const App = () => {
   return (
@@ -23,6 +24,7 @@ const App = () => {
           <Route path="dashboard" element={<AdminDashboardPage />} />
           <Route path="books" element={<AdminBooksPage />} />
           <Route path="users" element={<AdminUsersPage />} />
+          <Route path="fines" element={<AdminFinesPage />} />
         </Route>
       </Route>
 
