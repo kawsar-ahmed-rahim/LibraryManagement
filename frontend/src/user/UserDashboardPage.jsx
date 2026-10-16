@@ -9,6 +9,8 @@ import {
 import { userDashboardPageStyles as s } from "../assets/dummyStyles";
 import { useAuth } from "../shared/AuthContext";
 import { useLibrary } from "../shared/LibraryContext";
+import { Link } from "react-router-dom";
+import UserBookCard from "./UserBookCard";
 const UserDashboardPage = () => {
   const { currentUser } = useAuth();
   const { currentUserHistory, currentUserSummary } = useLibrary();
@@ -153,8 +155,29 @@ const UserDashboardPage = () => {
         <div className={s.recentHeader}>
           <div>
             <h2 className={s.recentTitle}>Recent Books</h2>
-            <p className={s.recentSubtitle}>The latest three records from your books page are shown here with the same card design so you can continue from the dashboard.</p>
+            <p className={s.recentSubtitle}>
+              The latest three records from your books page are shown here with
+              the same card design so you can continue from the dashboard.
+            </p>
           </div>
+          <Link to="/user/books" className={s.viewMoreButton}>
+            View More
+          </Link>
+        </div>
+        <div className={s.recentGrid}>
+          {recentBooks.length ? (
+            recentBooks.map((record) => (
+              <UserBookCard
+                keys={record.id}
+                record={record}
+                borrowerName={currentUser?.name ?? "student"}
+              />
+            ))
+          ) : (
+            <div className={s.emptyRecentState}>
+              No recent books found for this account.
+            </div>
+          )}
         </div>
       </section>
     </div>
