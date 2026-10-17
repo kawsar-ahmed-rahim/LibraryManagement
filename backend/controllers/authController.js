@@ -61,7 +61,7 @@ export async function registerUser(req, res) {
 
     res.status(201).json({
       message: "User registered successfully, OTP sent to email",
-      user,
+      email: user.email,
     });
   } catch (error) {
     console.log("Error registering user:", error);

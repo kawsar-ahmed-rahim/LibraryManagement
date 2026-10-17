@@ -6,11 +6,15 @@ import authRouter from "./routes/authRoutes.js";
 import studentRouter from "./routes/studentRoutes.js";
 import bookRouter from "./routes/bookRoutes.js";
 
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 const app = express();
 
 // MIDDLEWARES
-app.use(cors());
+app.use(
+  cors({
+    origin: ["http://localhost:5173", process.env.CLIENT_URL],
+  }),
+);
 app.use(express.json());
 
 //DB
@@ -26,6 +30,10 @@ app.get("/", (req, res) => {
   res.send("API WORKING");
 });
 
-app.listen(PORT, () => {
-  console.log(`server started on http://localhost:${PORT}`);
-});
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`server started on http://localhost:${PORT}`);
+  });
+}
+
+export default app;

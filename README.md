@@ -119,6 +119,23 @@ PORT=5000
 ```
 ---
 
+## 💡 Challenges Faced
+
+The hardest part of the project was implementing the **book return and fine status updates**. Each issue record has to stay consistent across several states: issued, returned, overdue, fine applied, and fine cleared.
+
+---
+
+### Solution
+
+* Created separate admin-only endpoints for returning a book, applying a fine, and clearing a fine.
+* Stored the fine status on each issue record so the admin and student views always show the same data.
+* Made the fine amount configurable from the Fine Settings page instead of hardcoding it.
+* [Add how you decide a book is overdue, e.g. comparing the due date with the return date]
+* [Add how the UI updates after an action, e.g. updating state in LibraryContext]
+* Debugged a 404 on the clear-fine route that turned out to be a typo in the route path, which taught me to compare the exact request URL with the registered route.
+
+---
+
 ## 📚 What I Learned
 
 * Building a full-stack app with separate admin and student roles
