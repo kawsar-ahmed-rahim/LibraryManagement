@@ -157,7 +157,7 @@ The hardest part of the project was implementing the **book return and fine stat
 
 ## 🔗 Live Demo
 
-👉 
+👉 https://library-management-8xfo.vercel.app/
 
 ---
 
