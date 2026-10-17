@@ -3,7 +3,6 @@ import { useAuth } from "../shared/AuthContext";
 import { userEditProfilePageStyles as s } from "./../assets/dummyStyles";
 import { studentSemesters, studentYears } from "./../data/libraryData";
 import { CheckCircle2, Pencil } from "lucide-react";
-
 const UserEditProfilePage = () => {
   const { currentUser, updateProfile } = useAuth();
   const [form, setForm] = useState({
@@ -84,6 +83,7 @@ const UserEditProfilePage = () => {
         <div className={s.toastWrapper}>
           <div className={s.toastContent}>
             <CheckCircle2 size={18} />
+            {toast}
           </div>
         </div>
       )}

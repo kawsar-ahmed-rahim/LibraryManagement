@@ -52,7 +52,7 @@ bookRouter.put(
 );
 
 bookRouter.put(
-  "/issues/:id/clear   -fine",
+  "/issues/:id/clear-fine",
   authenticateToken,
   authorizeRoles("admin"),
   clearFine,
